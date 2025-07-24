@@ -1,0 +1,319 @@
+physics
+```
+import type.base;
+import std.string;
+
+
+u32 entryStart = 0;
+u32 dataStart = 0;
+
+using hkReal = float;
+using hkInt32 = u32;
+using hkDeprecatedEnum8 = u8;
+using hkBool = bool;
+
+struct hkVector4 {
+    hkReal x;
+    hkReal y;
+    hkReal z;
+    hkReal w;
+};
+
+struct hkxLocalFixup {
+    u32 pointer;
+    u32 destination;
+};
+
+struct hkxGlobalFixup {
+    u32 pointer;
+    u32 sectionId;
+    u32 destination;
+};
+
+struct hkxVirtualFixup {
+    u32 pointer;
+    u32 sectionId;
+    u32 classnameOffset;
+};
+
+struct ClassName {
+    type::Hex<u32> signature;
+    u8 seperator;
+    s32 offset = $ - dataStart [[export]];
+    std::string::NullString string;
+};
+
+struct hkAabb {
+    hkVector4 min;
+    hkVector4 max;
+};
+
+struct hkCollisionFilter {
+
+};
+
+struct hkPhysicsSystem {
+
+};
+
+struct vTable {
+    u64;
+    u32;
+};
+
+
+u32 gLocalFixupAddr = 0;
+u32 gLocalFixupNum = 0;
+
+u32 gGlobalFixupAddr = 0;
+u32 gGlobalFixupNum = 0;
+
+u32 gVirtualFixupAddr = 0;
+u32 gVirtualFixupNum = 0;
+
+fn fixup_local() {
+    u32 addr = $ - dataStart;
+    
+    for(u32 i = 0, i < gLocalFixupNum, i += 1) {
+        hkxLocalFixup fixup @ gLocalFixupAddr + i * sizeof(hkxLocalFixup);
+        if(fixup.pointer == addr) {
+            return fixup.destination;
+        }
+    }
+    
+    return -1;
+};
+
+fn fixup_global() {
+    u32 addr = $ - dataStart;
+    
+    for(u32 i = 0, i < gGlobalFixupNum, i += 1) {
+        hkxGlobalFixup fixup @ gGlobalFixupAddr + i * sizeof(hkxGlobalFixup);
+        if(fixup.pointer == addr) {
+            return fixup.destination;
+        }
+    }
+    
+    return -1;
+};
+
+fn fixup_virtual() {
+    u32 addr = $ - dataStart;
+    
+    for(u32 i = 0, i < gVirtualFixupNum, i += 1) {
+        hkxVirtualFixup fixup @ gVirtualFixupAddr + i * sizeof(hkxVirtualFixup);
+        if(fixup.pointer == addr) {
+            return fixup.classnameOffset;
+        }
+    }
+    
+    return -1;
+};
+
+struct Pointer<T> {
+    u32 start = $;
+
+    u32 numElements = 0;
+    s64 local = fixup_local();
+    u32 in_addr = start - dataStart [[export]];
+    if (local != -1) {
+        u32 out_addr = local [[export]];
+        $ = dataStart + local;
+        
+        if(numElements == 0) {T value;}
+        if(numElements > 0) {T value[numElements];}
+    }
+    
+    s64 global = fixup_global();
+    if(global != -1) {
+        u32 out_addr = global [[export]];
+    }
+    
+    s64 virtual = fixup_virtual();
+    if(virtual != -1) {
+        u32 out_addr = virtual [[export]];
+    }
+};
+
+
+struct hkClass {
+    u32 vtable;
+};
+
+struct hkReferencedObject : hkClass {
+    u16 memSizeAndFlags;
+    u16 referenceCount;
+    padding[4];
+};
+
+struct hkWorldCinfo : hkReferencedObject {
+    hkVector4 gravity;
+    hkInt32 broadPhaseQuerySize;
+    hkReal contactRestingVelocity;
+    hkDeprecatedEnum8 broadPhaseBorderBehaviour;
+    hkAabb broadPhaseWorldAabb;
+    hkReal collisionTolerance;
+    // pointer to collisionFilter
+    hkReal expectedMaxLinearVelocity;
+    hkReal expectedMinPsiDeltaTime;
+    // pointer to memoryWatchdog
+    hkInt32 broadPhaseNumMarkers;
+    hkInt32 contactPointGeneration;
+    hkReal solverTau;
+    hkReal solverDamp;
+    hkInt32 solverIterations;
+    hkInt32 unusedPadding;
+    hkReal iterativeLinearCastEarlyOutDistance;
+    hkInt32 iterativeLinearCastMaxIterations;
+    hkReal highFrequencyDeactivationPeriod;
+    hkReal lowFrequencyDeactivationPeriod;
+    hkBool shouldActivateOnRigidBodyTransformChange;
+    hkReal toiCollisionResponseRotateNormal;
+    hkBool enableDeactivation;
+    hkDeprecatedEnum8 simulationType;
+    hkBool enableSimulationIslands;
+    hkBool processActionsInSingleThread;
+    hkReal frameMarkerPsiSnap;
+};
+
+struct hkPhysicsData : hkReferencedObject {
+    Pointer<hkWorldCinfo> worldCinfo;
+    Pointer<hkPhysicsSystem> systems;
+};
+
+struct hkxSectionHeaderData {
+    char sectionTag[20];
+    u32 absoluteDataStart;
+    u32 localFixupsOffset;
+    u32 globalFixupsOffset;
+    u32 virtualFixupsOffset;
+    u32 exportsOffset;
+    u32 importsOffset;
+    u32 bufferSize;
+    
+    u32 start = $;
+    
+    u32 virtualEOF = exportsOffset == -1U ? importsOffset : exportsOffset [[export]];
+    u32 circaNumLocalFixups = (globalFixupsOffset - localFixupsOffset) / sizeof(hkxLocalFixup) [[export]];
+    u32 circaNumGlobalFixups = (virtualFixupsOffset - globalFixupsOffset) / sizeof(hkxGlobalFixup) [[export]];
+    u32 circaNumVirtualFixups =  (virtualEOF - virtualFixupsOffset) / sizeof(hkxVirtualFixup) [[export]];
+    
+    gLocalFixupAddr = entryStart + absoluteDataStart + localFixupsOffset;
+    gLocalFixupNum = circaNumLocalFixups;
+    hkxLocalFixup localFixups[circaNumLocalFixups] @ gLocalFixupAddr;
+    
+    // local fixups are pointers to data inside this section
+    
+    gGlobalFixupAddr = entryStart + absoluteDataStart + globalFixupsOffset;
+    gGlobalFixupNum = circaNumGlobalFixups;
+    hkxGlobalFixup globalFixups[circaNumGlobalFixups] @ gGlobalFixupAddr;
+
+    // global fixups are pointers to data outside this section
+    
+    gVirtualFixupAddr = entryStart + absoluteDataStart + virtualFixupsOffset;
+    gVirtualFixupNum = circaNumVirtualFixups;
+    hkxVirtualFixup virtualFixups[circaNumVirtualFixups] @ gVirtualFixupAddr;
+
+    // virtual fixups point to classname offsets; They mean that starting from `offset` this is a `classname type`
+    
+    if(absoluteDataStart > 0) {
+        $ = entryStart + absoluteDataStart;
+        dataStart = $;
+
+        if(std::string::starts_with(sectionTag,"__data__")) {
+            if(virtualFixups[0].classnameOffset == 203) {
+                hkPhysicsData physicsData;
+            }
+        }
+        
+        if(std::string::starts_with(sectionTag,"__classnames__")) {
+            ClassName classNames[40];
+        }
+    }
+    $ = start;
+};
+
+struct hkxHeaderlayout {
+    u8 bytesInPointer;
+    bool littleEndian;
+    bool reusePaddingOptimization;
+    bool emptyBaseClassOptimization;
+};
+
+struct hkxHeaderData {
+    type::Hex<u32> magic1;
+    type::Hex<u32> magic2;
+    u32 userTag;
+    u32 version;
+    hkxHeaderlayout layout;
+    u32 numSections;
+    u32 contentsSectionIndex;
+    u32 contentsSectionOffset;
+    u32 contentsClassNameSectionIndex;
+    u32 contentsClassNameSectionOffset;
+    char contentsVersion[16];
+    u32 flags;
+    padding[4];
+};
+
+
+struct PhysicsEntry {
+    u32 index;
+    u32 size;
+    entryStart = $;
+    hkxHeaderData header;
+    hkxSectionHeaderData sections[header.numSections];
+    padding[entryStart + size - $];
+};
+
+struct PhysicsFile {
+    char magic[4];
+    u32 version;
+    PhysicsEntry entries[3];
+};
+
+
+PhysicsFile file @ $;
+```
+
+footprintset (ms)
+```
+import type.base;
+import std.string;
+
+using CString = std::string::NullString;
+
+struct ResourceKey {
+    type::Hex<u64> instance;
+    type::Hex<u32> type;
+    type::Hex<u32> group;
+};
+
+// Seems to be a format for path finding?
+struct FootPrintSetFile {
+    u32;
+    u32;
+    u32;
+    u32;
+    u32;
+    ResourceKey self;
+    u32;
+    u32 fpstSize;
+    char magic1[4];
+    u32;
+    u32;
+    char magic2[4];
+    u32;
+    u32;
+    u32 width;
+    u32 height;
+    u32 depth; // bits per item, usually 4
+    float gridSizeX; // maybe?
+    float gridSizeY;
+    u32 size;
+    u32 type;
+    u8 data[size]; // u8 data[width * height / 2]; // 4 bits per value collision?
+};
+
+FootPrintSetFile file @ $;
+```
