@@ -2,6 +2,7 @@ import bpy
 from bpy.types import Material, Object, Scene
 from bpy.props import PointerProperty
 
+from .Export_ExportWindowsModel import ExportWindowsModel
 from .Operators_EnableMySimsMaterial import EnableMySimsMaterial
 from .UI_MaterialParamList import MATERIAL_UL_param_list
 from .UI_MaterialList import MATERIAL_UL_list
@@ -54,6 +55,7 @@ classes = [
     ImportPhysics,
     ImportWindowsModel,
     ImportMySimsLevel,
+    ExportWindowsModel,
 
     MySimsPanelMain,
     MySimsPanelObject,

@@ -23,4 +23,6 @@ class MySimsPanelMain(Panel):
         layout.label(text="Export Settings")
         box = layout.box()
 
+        box.prop(scene_props, "export_type")
+
 

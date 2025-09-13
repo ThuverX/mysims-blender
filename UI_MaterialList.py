@@ -15,6 +15,7 @@ class MATERIAL_UL_list(bpy.types.UIList):
             row.label(text="(Missing key)")
 
         icons = row.row(align=True)
-        enable_op = icons.operator(EnableMySimsMaterial.bl_idname, text="", icon="HIDE_OFF")
-        enable_op.index = index
-        icons.operator(CopyMySimsMaterial.bl_idname, text="", icon="DUPLICATE")
+        op_enable = icons.operator(EnableMySimsMaterial.bl_idname, text="", icon="HIDE_OFF")
+        op_enable.index = index
+        op_copy = icons.operator(CopyMySimsMaterial.bl_idname, text="", icon="DUPLICATE")
+        op_copy.index = index

@@ -1,4 +1,5 @@
 from bpy.types import Panel
+
 from .Props_ObjectProps import MySimsObjectProps
 
 class MySimsPanelObject(Panel):
@@ -27,3 +28,9 @@ class MySimsPanelObject(Panel):
 
         if object_props.object_type == 'physics':
             layout.prop(object_props, "physics_type", text="Physics Type")
+
+        if object_props.object_type == 'level':
+            layout.operator("mysims.copy_material", text="Bake ambient map (shadows)")
+
+        if object_props.object_type == 'model':
+            layout.operator("export_mesh.windowsmodel", text="Export")

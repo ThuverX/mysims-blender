@@ -40,7 +40,7 @@ class MySimsPanelMaterial(Panel):
             )
             layout.separator()
 
-            if material_props.selected_material is not None:
+            if material_props.selected_material is not None and len(material_props.materials) > 0:
                 item = material_props.materials[material_props.selected_material]
 
                 if item.locked:
@@ -50,7 +50,8 @@ class MySimsPanelMaterial(Panel):
 
                 op_enable = row.operator(EnableMySimsMaterial.bl_idname, text="Preview", icon="HIDE_OFF")
                 op_enable.index = -1
-                row.operator(CopyMySimsMaterial.bl_idname, text="Copy", icon="DUPLICATE")  # TODO REAL OPERATOR
+                op_copy = row.operator(CopyMySimsMaterial.bl_idname, text="Copy", icon="DUPLICATE")
+                op_copy.index = -1
 
                 box = layout.box()
                 if item.locked:

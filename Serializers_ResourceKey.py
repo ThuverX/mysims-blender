@@ -81,15 +81,15 @@ class ResourceKey(Serializer):
         start_write()
 
         if get_endianness(buf) == "le":
-            uint64_t(buf, self.instance)
+            uint64_t(buf, self.instance or 0)
         else:
-            low = self.instance & 0xFFFFFFFF
-            high = (self.instance >> 32) & 0xFFFFFFFF
+            low = (self.instance or 0) & 0xFFFFFFFF
+            high = ((self.instance or 0) >> 32) & 0xFFFFFFFF
             uint32_t(buf, low)
             uint32_t(buf, high)
 
-        uint32_t(buf, self.type)
-        uint32_t(buf, self.group)
+        uint32_t(buf, self.type or 0)
+        uint32_t(buf, self.group or 0)
 
     def __str__(self):
         return f"0x{self.group:08x}!0x{self.instance:016x}.{typeid_to_typename(self.type)}"
