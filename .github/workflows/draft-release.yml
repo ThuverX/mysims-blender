@@ -17,20 +17,13 @@ jobs:
       - name: Read version from blender_manifest.toml
         id: meta
         run: |
-          python - <<'PY'
-import re
-from pathlib import Path
-
-manifest = Path("blender_manifest.toml")
-text = manifest.read_text(encoding="utf-8")
-match = re.search(r'^version\s*=\s*"([^"]+)"', text, re.MULTILINE)
-if not match:
-    raise SystemExit("version field not found in blender_manifest.toml")
-version = match.group(1)
-print(f"version={version}")
-with open("$GITHUB_OUTPUT", "a", encoding="utf-8") as fh:
-    fh.write(f"version={version}\n")
-PY
+          set -euo pipefail
+          version=$(grep -E '^version\s*=\s*"' blender_manifest.toml | head -n1 | sed -E 's/[^\"]*"([^"]+)".*/\1/')
+          if [ -z "$version" ]; then
+            echo "version field not found in blender_manifest.toml" >&2
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Build zip archive
         run: |
