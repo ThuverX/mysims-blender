@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "mysims_blender"
-version = "0.1.2"
+version = "0.1.3"
 name = "Mysims Blender"
 tagline = "Import and export MySims Windows models"
 maintainer = "ThuverX"
