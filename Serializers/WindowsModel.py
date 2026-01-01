@@ -358,8 +358,8 @@ class WindowsModelDrawable(Serializer):
         start_write()
         self.material.write(buf)
 
-        self.bounds_min.as_blender().write(buf)
-        self.bounds_max.as_blender().write(buf)
+        self.bounds_min.as_mysims().write(buf)
+        self.bounds_max.as_mysims().write(buf)
 
         skip(buf, 8)
         uint32_t(buf, self.name)
@@ -524,8 +524,8 @@ class WindowsModel(Serializer):
         uint8_t(buf, 1)
         uint16_t(buf, 0)
 
-        self.bounds_min.as_blender().write(buf)
-        self.bounds_max.as_blender().write(buf)
+        self.bounds_min.as_mysims().write(buf)
+        self.bounds_max.as_mysims().write(buf)
 
         uint32_t(buf, len(self.extra_params))
         if len(self.extra_params) > 0:
