@@ -1,0 +1,49 @@
+name: Draft Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  draft-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read version from blender_manifest.toml
+        id: meta
+        run: |
+          python - <<'PY'
+import re
+from pathlib import Path
+
+manifest = Path("blender_manifest.toml")
+text = manifest.read_text(encoding="utf-8")
+match = re.search(r'^version\s*=\s*"([^"]+)"', text, re.MULTILINE)
+if not match:
+    raise SystemExit("version field not found in blender_manifest.toml")
+version = match.group(1)
+print(f"version={version}")
+with open("$GITHUB_OUTPUT", "a", encoding="utf-8") as fh:
+    fh.write(f"version={version}\n")
+PY
+
+      - name: Build zip archive
+        run: |
+          git archive --format=zip --output "mysims-blender-${{ steps.meta.outputs.version }}.zip" HEAD
+
+      - name: Create draft release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          generate_release_notes: true
+          files: mysims-blender-${{ steps.meta.outputs.version }}.zip
+          name: Release v${{ steps.meta.outputs.version }}
+          tag_name: ${{ github.ref_name }}
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
