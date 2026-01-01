@@ -1,7 +1,7 @@
 import os
 from io import BufferedReader
-
-from .Serializers_ResourceKey import ResourceKey
+import bpy
+from .Serializers.ResourceKey import ResourceKey
 from .util import get_game_path
 from contextlib import nullcontext
 
@@ -15,6 +15,9 @@ class MySimsFileSystem:
     def update(self):
         self.records = {}
         self.records.clear()
+        self.ready = False
+
+        bpy.context.window.cursor_set('WAIT')
 
         itr = 0
         root_path = get_game_path()
@@ -27,6 +30,7 @@ class MySimsFileSystem:
 
         print("Loaded {0} records".format(itr))
         self.ready = True
+        bpy.context.window.cursor_set('DEFAULT')
 
     def get(self, key: ResourceKey) -> str | None:
         if not self.ready:

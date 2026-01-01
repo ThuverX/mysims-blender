@@ -1,26 +1,26 @@
 import bpy
-from bpy.types import Material, Object, Scene
+from bpy.types import Object, Scene
 from bpy.props import PointerProperty
 
-from .Export_ExportWindowsModel import ExportWindowsModel
-from .Operators_EnableMySimsMaterial import EnableMySimsMaterial
-from .UI_MaterialParamList import MATERIAL_UL_param_list
-from .UI_MaterialList import MATERIAL_UL_list
-from .Operators_CopyMySimsMaterial import CopyMySimsMaterial
-from .Shaders_ShaderNodes import register_shaders, unregister_shaders
-from .Props_MaterialProps import MySimsMaterialProps, MySimsMaterialParam, MySimsSingleMaterialProps
-from .Props_ObjectProps import MySimsObjectProps
-from .Props_SceneProps import MySimsSceneProps
+from .Export.ExportWindowsModel import ExportWindowsModel
+from .Operators.EnableMySimsMaterial import EnableMySimsMaterial
+from .UI.MaterialParamList import MATERIAL_UL_param_list
+from .UI.MaterialList import MATERIAL_UL_list
+from .Operators.CopyMySimsMaterial import CopyMySimsMaterial
+from .Shaders.ShaderNodes import register_shaders, unregister_shaders
+from .Props.MaterialProps import MySimsMaterialProps, MySimsMaterialParam, MySimsSingleMaterialProps
+from .Props.ObjectProps import MySimsObjectProps
+from .Props.SceneProps import MySimsSceneProps
 
 from .MySimsFileSystem import MS_FILE_SYSTEM
-from .Props_KeyProp import BlenderKeyProperty
-from .Panels_MySimsPanelMain import MySimsPanelMain
-from .Panels_MySimsPanelObject import MySimsPanelObject
-from .Panels_MySimsPanelMaterial import MySimsPanelMaterial
+from .Props.KeyProp import BlenderKeyProperty
+from .Panels.MySimsPanelMain import MySimsPanelMain
+from .Panels.MySimsPanelObject import MySimsPanelObject
+from .Panels.MySimsPanelMaterial import MySimsPanelMaterial
 
-from .Import_ImportWindowsModel import ImportWindowsModel
-from .Import_ImportPhysics import ImportPhysics
-from .Import_ImportMySimsLevel import ImportMySimsLevel
+from .Import.ImportWindowsModel import ImportWindowsModel
+from .Import.ImportPhysics import ImportPhysics
+from .Import.ImportMySimsLevel import ImportMySimsLevel
 
 bl_info = {
     "name": "MySims Blender",
